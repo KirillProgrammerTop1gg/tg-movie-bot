@@ -35,6 +35,16 @@
                 "Bill Murray"
             ],
             "poster": "https://upload.wikimedia.org/wikipedia/en/thumb/e/eb/Garfield_ver6.jpg/220px-Garfield_ver6.jpg"
+        },
+        {
+            "name": "1",
+            "description": "2",
+            "rating": 3.0,
+            "genre": "4",
+            "actors": [
+                "5"
+            ],
+            "poster": "https://fd-company.net/image/catalog/banners/shema/logo.png"
         }
     ]
 }

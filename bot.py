@@ -6,22 +6,34 @@ from commands import (
     START_COMMAND,
     FILM_CREATE_COMMAND,
     CREATING_EXIT_COMMAND,
+    SEARCH_FILMS_COMMAND,
     FILMS_BOT_COMMAND,
     START_BOT_COMMAND,
     FILM_CREATE_BOT_COMMAND,
     CREATING_EXIT_BOT_COMMAND,
+    SEARCH_FILMS_BOT_COMMAND,
 )
 from config import BOT_TOKEN
-from data.data import get_films, add_film
+from data.data import get_films, add_film, search_films
 from aiogram.types import Message, CallbackQuery
 from aiogram import F
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from models import Film
 from validation import is_url_has_image
-from keyboards import films_keyboard_markup, FilmCallback
+from keyboards import (
+    films_keyboard_markup,
+    FilmCallback,
+    search_keyboard_markup,
+    SearchCallback,
+)
 
 dp = Dispatcher()
+
+
+class SearchFilmForm(StatesGroup):
+    query = State()
+    query_mode = State()
 
 
 class FilmForm(StatesGroup):
@@ -139,6 +151,42 @@ async def exit_creating(message: Message, state: FSMContext):
     await message.answer("Ви успішно покинунли додавання фільму")
 
 
+@dp.message(SEARCH_FILMS_COMMAND)
+async def start_search_films(message: Message, state: FSMContext):
+    await message.answer(
+        "Ви хочете зробити пошук за: ", reply_markup=search_keyboard_markup()
+    )
+
+
+@dp.callback_query(SearchCallback.filter())
+async def callb_film(
+    callback: CallbackQuery, callback_data: SearchCallback, state: FSMContext
+) -> None:
+    search_mode = callback_data.s
+    await state.update_data(search_mode=search_mode)
+    await state.set_state(SearchFilmForm.query)
+    if search_mode == "search":
+        await callback.message.answer("Введіть назву для пошуку:")
+    else:
+        await callback.message.answer("Введіть актора чи жанр фільмів для фільтрації:")
+    await callback.message.delete()
+    await callback.answer()
+
+
+@dp.message(SearchFilmForm.query, F.text)
+async def films_search(message: Message, state: FSMContext):
+    data = await state.get_data()
+    search_mode = data["search_mode"]
+    query = message.text
+    data = search_films(query, search_mode=search_mode)
+    if data:
+        markup = films_keyboard_markup(data)
+        await message.answer("Оберіть фільм зі знайдених:", reply_markup=markup)
+    else:
+        await message.answer("Фільмів не знайдено")
+    await state.clear()
+
+
 async def main():
     bot = Bot(token=BOT_TOKEN)
     await bot.set_my_commands(
@@ -147,6 +195,7 @@ async def main():
             FILMS_BOT_COMMAND,
             FILM_CREATE_BOT_COMMAND,
             CREATING_EXIT_BOT_COMMAND,
+            SEARCH_FILMS_BOT_COMMAND,
         ]
     )
     await dp.start_polling(bot)

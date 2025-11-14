@@ -5,6 +5,7 @@ START_COMMAND = Command("start")
 FILMS_COMMAND = Command("films")
 FILM_CREATE_COMMAND = Command("create_film")
 CREATING_EXIT_COMMAND = Command("creating_exit")
+SEARCH_FILMS_COMMAND = Command("search_film")
 
 START_BOT_COMMAND = BotCommand(command="start", description="Почати розмову")
 FILMS_BOT_COMMAND = BotCommand(command="films", description="Перегляд списку фільмів")
@@ -13,4 +14,7 @@ FILM_CREATE_BOT_COMMAND = BotCommand(
 )
 CREATING_EXIT_BOT_COMMAND = BotCommand(
     command="creating_exit", description="Зупинити додавання фільма"
+)
+SEARCH_FILMS_BOT_COMMAND = BotCommand(
+    command="search_film", description="Пошук фільму за назвою"
 )
